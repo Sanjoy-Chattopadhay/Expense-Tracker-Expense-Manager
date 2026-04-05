@@ -13,16 +13,51 @@ from webapp import register_web_routes
 
 load_dotenv()
 
-APP_DIR = os.path.dirname(__file__)
-DATA_DIR = os.path.join(APP_DIR, "data")
-LEGACY_TEMP_DB_PATH = os.path.join(tempfile.gettempdir(), "expenses.db")
-DB_PATH = os.path.join(DATA_DIR, "expenses.db")
+APP_DIR = os.path.dirname(os.path.abspath(__file__))
 CATEGORIES_PATH = os.path.join(APP_DIR, "categories.json")
 
-os.makedirs(DATA_DIR, exist_ok=True)
-if not os.path.exists(DB_PATH) and os.path.exists(LEGACY_TEMP_DB_PATH):
-    shutil.copy2(LEGACY_TEMP_DB_PATH, DB_PATH)
+# ---------------------------------------------------------------------------
+# Resolve a writable DB path — checked in priority order:
+#   1. DB_PATH env var (explicit override, e.g. a mounted volume on Render/Railway)
+#   2. /app/data/expenses.db  — writable only if the dir exists AND is writable
+#   3. /tmp/expenses.db       — always writable fallback (ephemeral but functional)
+# ---------------------------------------------------------------------------
 
+def _resolve_db_path() -> str:
+    if os.environ.get("DB_PATH"):
+        p = os.environ["DB_PATH"]
+        os.makedirs(os.path.dirname(p), exist_ok=True)
+        return p
+
+    candidates = [
+        os.path.join(APP_DIR, "data", "expenses.db"),
+        "/app/data/expenses.db",
+        os.path.join(tempfile.gettempdir(), "expenses.db"),
+    ]
+    for candidate in candidates:
+        d = os.path.dirname(candidate)
+        try:
+            os.makedirs(d, exist_ok=True)
+            # Quick write test
+            probe = os.path.join(d, ".write_probe")
+            with open(probe, "w") as f:
+                f.write("ok")
+            os.remove(probe)
+
+            # Migrate from old temp location if needed
+            legacy = os.path.join(tempfile.gettempdir(), "expenses.db")
+            if not os.path.exists(candidate) and os.path.exists(legacy) and candidate != legacy:
+                shutil.copy2(legacy, candidate)
+
+            return candidate
+        except Exception:
+            continue
+
+    # Last-resort: pure temp
+    return os.path.join(tempfile.gettempdir(), "expenses.db")
+
+
+DB_PATH = _resolve_db_path()
 print(f"Database path: {DB_PATH}")
 
 mcp = FastMCP("ExpenseTracker")

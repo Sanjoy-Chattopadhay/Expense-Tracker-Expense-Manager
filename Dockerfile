@@ -13,6 +13,9 @@ RUN uv sync --frozen --no-dev
 
 COPY . .
 
+# Ensure the data directory exists and is writable at runtime
+RUN mkdir -p /app/data && chmod 777 /app/data
+
 EXPOSE 10000
 
 CMD ["sh", "-c", "uv run uvicorn app:app --host 0.0.0.0 --port ${PORT}"]
