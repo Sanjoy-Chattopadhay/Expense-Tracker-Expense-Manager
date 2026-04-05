@@ -11,5 +11,24 @@ services:
       mountPath: /app/data
       sizeGB: 1
     envVars:
+      - key: PORT
+        value: 8000
+      - key: DB_PATH
+        value: /app/data/expenses.db
+      - key: SECURE_COOKIES
+        value: "true"
+      - key: SESSION_TTL_DAYS
+        value: "30"
+      - key: OTP_TTL_MINUTES
+        value: "10"
+      # Set these in the Render dashboard (sync: false = secret / not in repo)
       - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: MCP_URL
+        sync: false
+      - key: TWILIO_ACCOUNT_SID
+        sync: false
+      - key: TWILIO_AUTH_TOKEN
+        sync: false
+      - key: TWILIO_VERIFY_SERVICE_SID
         sync: false

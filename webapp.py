@@ -18,8 +18,11 @@ from twilio.rest import Client
 
 
 SESSION_COOKIE = "expense_tracker_session"
-SESSION_TTL_DAYS = 30
-OTP_TTL_MINUTES = 10
+SESSION_TTL_DAYS = int(os.getenv("SESSION_TTL_DAYS", "30"))
+OTP_TTL_MINUTES = int(os.getenv("OTP_TTL_MINUTES", "10"))
+# Cookies are marked Secure when running behind HTTPS (default: True).
+# Set SECURE_COOKIES=false only for local HTTP development.
+SECURE_COOKIES = os.getenv("SECURE_COOKIES", "true").lower() == "true"
 PHONE_RE = re.compile(r"^\+?[1-9]\d{9,14}$")
 
 
@@ -144,7 +147,7 @@ def register_web_routes(mcp: Any, db_path: str, categories_path: str) -> None:
             token,
             httponly=True,
             samesite="lax",
-            secure=False,
+            secure=SECURE_COOKIES,
             expires=expires,
             path="/",
         )
@@ -318,7 +321,7 @@ def register_web_routes(mcp: Any, db_path: str, categories_path: str) -> None:
                     "mode": "google" if google_sign_in_enabled() else "disabled",
                     "google_client_id": get_google_client_id(),
                 },
-                "mcp_url": "https://academic-gold-weasel.fastmcp.app/mcp",
+                "mcp_url": os.getenv("MCP_URL", ""),
             }
         )
 

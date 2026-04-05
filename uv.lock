@@ -186,6 +186,7 @@ dependencies = [
     { name = "python-dotenv" },
     { name = "starlette" },
     { name = "twilio" },
+    { name = "uvicorn" },
 ]
 
 [package.metadata]
@@ -196,6 +197,7 @@ requires-dist = [
     { name = "python-dotenv", specifier = ">=1.1.1" },
     { name = "starlette", specifier = ">=0.46.2" },
     { name = "twilio", specifier = ">=9.8.3" },
+    { name = "uvicorn", specifier = ">=0.34.0" },
 ]
 
 [[package]]

@@ -5,7 +5,11 @@ const state = {
   publicConfig: null,
 };
 
-const MCP_URL = "https://academic-gold-weasel.fastmcp.app/mcp";
+// MCP_URL is resolved at runtime from /api/public-config so it always
+// reflects the live deployment URL instead of a hardcoded value.
+function getMcpUrl() {
+  return state.publicConfig?.mcp_url || "";
+}
 const IS_FILE_MODE = window.location.protocol === "file:";
 
 function getTheme() {
@@ -561,11 +565,11 @@ nodes.logoutBtn.addEventListener("click", async () => {
 });
 
 nodes.copyPublicMcpBtn.addEventListener("click", async () => {
-  await copyText(MCP_URL, "MCP URL copied for your chatbot setup.");
+  await copyText(getMcpUrl(), "MCP URL copied for your chatbot setup.");
 });
 
 nodes.copyAppMcpBtn.addEventListener("click", async () => {
-  await copyText(MCP_URL, "Hosted MCP endpoint copied.");
+  await copyText(getMcpUrl(), "Hosted MCP endpoint copied.");
 });
 
 nodes.expenseHistory.addEventListener("click", async (event) => {
